@@ -394,7 +394,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📬 Contact
 
-For questions or feedback, please open an issue in this repository.
+For questions or feedback:
+
+- **LinkedIn**: [linkedin.com/in/nwangumaemmanuel](https://linkedin.com/in/nwangumaemmanuel)
+- **Email**: nwangumaemmanuel29@gmail.com
+- **GitHub Issues**: Open an issue in this repository
 
 ---
 

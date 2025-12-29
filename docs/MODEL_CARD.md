@@ -167,4 +167,8 @@ Based on UCI Heart Disease Dataset (Cleveland)
 
 ## Contact
 
-For questions, issues, or feedback about this model, please open an issue in the project repository.
+For questions, issues, or feedback about this model:
+
+- **LinkedIn**: [linkedin.com/in/nwangumaemmanuel](https://linkedin.com/in/nwangumaemmanuel)
+- **Email**: nwangumaemmanuel29@gmail.com
+- **GitHub Issues**: Open an issue in the project repository
