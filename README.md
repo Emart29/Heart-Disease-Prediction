@@ -1,4 +1,5 @@
 # ❤️ Heart Disease Prediction
+![CI](https://github.com/Emart29/Heart-Disease-Prediction/actions/workflows/ci.yml/badge.svg)
 
 A production-ready machine learning application for heart disease risk assessment, featuring a REST API, interactive web interface, and MLOps best practices.
 
