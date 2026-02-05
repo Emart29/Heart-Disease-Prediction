@@ -29,21 +29,23 @@ VALID_THAL = st.sampled_from([3, 6, 7])
 
 def create_valid_patient_data():
     """Strategy to generate valid patient data dictionaries."""
-    return st.fixed_dictionaries({
-        "age": VALID_AGE,
-        "sex": VALID_SEX,
-        "cp": VALID_CP,
-        "trestbps": VALID_TRESTBPS,
-        "chol": VALID_CHOL,
-        "fbs": VALID_FBS,
-        "restecg": VALID_RESTECG,
-        "thalach": VALID_THALACH,
-        "exang": VALID_EXANG,
-        "oldpeak": VALID_OLDPEAK,
-        "slope": VALID_SLOPE,
-        "ca": VALID_CA,
-        "thal": VALID_THAL,
-    })
+    return st.fixed_dictionaries(
+        {
+            "age": VALID_AGE,
+            "sex": VALID_SEX,
+            "cp": VALID_CP,
+            "trestbps": VALID_TRESTBPS,
+            "chol": VALID_CHOL,
+            "fbs": VALID_FBS,
+            "restecg": VALID_RESTECG,
+            "thalach": VALID_THALACH,
+            "exang": VALID_EXANG,
+            "oldpeak": VALID_OLDPEAK,
+            "slope": VALID_SLOPE,
+            "ca": VALID_CA,
+            "thal": VALID_THAL,
+        }
+    )
 
 
 # Invalid value strategies
@@ -69,12 +71,12 @@ INVALID_THAL = st.integers().filter(lambda x: x not in [3, 6, 7])
 
 class TestProperty2InvalidInputProducesValidationError:
     """Property 2: Invalid Input Produces Validation Error.
-    
-    For any patient data with missing required fields OR numeric values 
-    outside valid ranges OR invalid categorical values, the Data_Validator 
-    SHALL reject the input and return an error message identifying the 
+
+    For any patient data with missing required fields OR numeric values
+    outside valid ranges OR invalid categorical values, the Data_Validator
+    SHALL reject the input and return an error message identifying the
     specific invalid field(s).
-    
+
     **Feature: portfolio-enhancement, Property 2: Invalid Input Produces Validation Error**
     **Validates: Requirements 4.1, 4.2, 4.3, 4.4**
     """
@@ -89,23 +91,36 @@ class TestProperty2InvalidInputProducesValidationError:
 
     @given(
         valid_data=create_valid_patient_data(),
-        field_to_remove=st.sampled_from([
-            "age", "sex", "cp", "trestbps", "chol", "fbs", "restecg",
-            "thalach", "exang", "oldpeak", "slope", "ca", "thal"
-        ])
+        field_to_remove=st.sampled_from(
+            [
+                "age",
+                "sex",
+                "cp",
+                "trestbps",
+                "chol",
+                "fbs",
+                "restecg",
+                "thalach",
+                "exang",
+                "oldpeak",
+                "slope",
+                "ca",
+                "thal",
+            ]
+        ),
     )
     @settings(max_examples=100)
     def test_missing_required_field_produces_error(self, valid_data, field_to_remove):
         """For any missing required field, validation SHALL fail.
-        
+
         Validates: Requirement 4.1 - validate all required fields are present
         """
         data = valid_data.copy()
         del data[field_to_remove]
-        
+
         with pytest.raises(ValidationError) as exc_info:
             PatientData(**data)
-        
+
         # Verify error identifies the specific missing field
         errors = exc_info.value.errors()
         error_fields = [e["loc"][0] for e in errors]
@@ -115,15 +130,15 @@ class TestProperty2InvalidInputProducesValidationError:
     @settings(max_examples=100)
     def test_age_below_range_produces_error(self, valid_data, invalid_age):
         """For any age below valid range, validation SHALL fail.
-        
+
         Validates: Requirement 4.2 - validate numeric fields within expected ranges
         """
         data = valid_data.copy()
         data["age"] = invalid_age
-        
+
         with pytest.raises(ValidationError) as exc_info:
             PatientData(**data)
-        
+
         errors = exc_info.value.errors()
         error_fields = [e["loc"][0] for e in errors]
         assert "age" in error_fields
@@ -132,32 +147,34 @@ class TestProperty2InvalidInputProducesValidationError:
     @settings(max_examples=100)
     def test_age_above_range_produces_error(self, valid_data, invalid_age):
         """For any age above valid range, validation SHALL fail.
-        
+
         Validates: Requirement 4.2 - validate numeric fields within expected ranges
         """
         data = valid_data.copy()
         data["age"] = invalid_age
-        
+
         with pytest.raises(ValidationError) as exc_info:
             PatientData(**data)
-        
+
         errors = exc_info.value.errors()
         error_fields = [e["loc"][0] for e in errors]
         assert "age" in error_fields
 
-    @given(valid_data=create_valid_patient_data(), invalid_trestbps=INVALID_TRESTBPS_LOW)
+    @given(
+        valid_data=create_valid_patient_data(), invalid_trestbps=INVALID_TRESTBPS_LOW
+    )
     @settings(max_examples=100)
     def test_trestbps_below_range_produces_error(self, valid_data, invalid_trestbps):
         """For any blood pressure below valid range, validation SHALL fail.
-        
+
         Validates: Requirement 4.2 - validate numeric fields within expected ranges
         """
         data = valid_data.copy()
         data["trestbps"] = invalid_trestbps
-        
+
         with pytest.raises(ValidationError) as exc_info:
             PatientData(**data)
-        
+
         errors = exc_info.value.errors()
         error_fields = [e["loc"][0] for e in errors]
         assert "trestbps" in error_fields
@@ -166,15 +183,15 @@ class TestProperty2InvalidInputProducesValidationError:
     @settings(max_examples=100)
     def test_chol_above_range_produces_error(self, valid_data, invalid_chol):
         """For any cholesterol above valid range, validation SHALL fail.
-        
+
         Validates: Requirement 4.2 - validate numeric fields within expected ranges
         """
         data = valid_data.copy()
         data["chol"] = invalid_chol
-        
+
         with pytest.raises(ValidationError) as exc_info:
             PatientData(**data)
-        
+
         errors = exc_info.value.errors()
         error_fields = [e["loc"][0] for e in errors]
         assert "chol" in error_fields
@@ -183,15 +200,15 @@ class TestProperty2InvalidInputProducesValidationError:
     @settings(max_examples=100)
     def test_oldpeak_above_range_produces_error(self, valid_data, invalid_oldpeak):
         """For any oldpeak above valid range, validation SHALL fail.
-        
+
         Validates: Requirement 4.2 - validate numeric fields within expected ranges
         """
         data = valid_data.copy()
         data["oldpeak"] = invalid_oldpeak
-        
+
         with pytest.raises(ValidationError) as exc_info:
             PatientData(**data)
-        
+
         errors = exc_info.value.errors()
         error_fields = [e["loc"][0] for e in errors]
         assert "oldpeak" in error_fields
@@ -200,15 +217,15 @@ class TestProperty2InvalidInputProducesValidationError:
     @settings(max_examples=100)
     def test_invalid_sex_produces_error(self, valid_data, invalid_sex):
         """For any invalid sex value, validation SHALL fail.
-        
+
         Validates: Requirement 4.3 - validate categorical fields contain valid values
         """
         data = valid_data.copy()
         data["sex"] = invalid_sex
-        
+
         with pytest.raises(ValidationError) as exc_info:
             PatientData(**data)
-        
+
         errors = exc_info.value.errors()
         error_fields = [e["loc"][0] for e in errors]
         assert "sex" in error_fields
@@ -217,15 +234,15 @@ class TestProperty2InvalidInputProducesValidationError:
     @settings(max_examples=100)
     def test_invalid_cp_produces_error(self, valid_data, invalid_cp):
         """For any invalid chest pain type, validation SHALL fail.
-        
+
         Validates: Requirement 4.3 - validate categorical fields contain valid values
         """
         data = valid_data.copy()
         data["cp"] = invalid_cp
-        
+
         with pytest.raises(ValidationError) as exc_info:
             PatientData(**data)
-        
+
         errors = exc_info.value.errors()
         error_fields = [e["loc"][0] for e in errors]
         assert "cp" in error_fields
@@ -234,15 +251,15 @@ class TestProperty2InvalidInputProducesValidationError:
     @settings(max_examples=100)
     def test_invalid_thal_produces_error(self, valid_data, invalid_thal):
         """For any invalid thalassemia value, validation SHALL fail.
-        
+
         Validates: Requirement 4.3 - validate categorical fields contain valid values
         """
         data = valid_data.copy()
         data["thal"] = invalid_thal
-        
+
         with pytest.raises(ValidationError) as exc_info:
             PatientData(**data)
-        
+
         errors = exc_info.value.errors()
         error_fields = [e["loc"][0] for e in errors]
         assert "thal" in error_fields
@@ -251,15 +268,15 @@ class TestProperty2InvalidInputProducesValidationError:
     @settings(max_examples=100)
     def test_invalid_slope_produces_error(self, valid_data, invalid_slope):
         """For any invalid slope value, validation SHALL fail.
-        
+
         Validates: Requirement 4.3 - validate categorical fields contain valid values
         """
         data = valid_data.copy()
         data["slope"] = invalid_slope
-        
+
         with pytest.raises(ValidationError) as exc_info:
             PatientData(**data)
-        
+
         errors = exc_info.value.errors()
         error_fields = [e["loc"][0] for e in errors]
         assert "slope" in error_fields
