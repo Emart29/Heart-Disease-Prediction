@@ -34,13 +34,13 @@ VALID_PATIENT_DATA = {
     "oldpeak": 1.5,
     "slope": 2,
     "ca": 0,
-    "thal": 3
+    "thal": 3,
 }
 
 
 class TestHealthEndpoint:
     """Tests for the /health endpoint.
-    
+
     Validates: Requirement 2.3 - GET /health for health checks
     """
 
@@ -66,7 +66,7 @@ class TestHealthEndpoint:
 
 class TestModelInfoEndpoint:
     """Tests for the /model-info endpoint.
-    
+
     Validates: Requirement 2.4 - GET /model-info returning model metadata
     """
 
@@ -109,13 +109,13 @@ class TestModelInfoEndpoint:
 
 class TestPredictEndpoint:
     """Tests for the /predict endpoint.
-    
+
     Validates: Requirements 2.1, 2.2, 2.5
     """
 
     def test_predict_with_valid_data_returns_200(self):
         """Predict endpoint SHALL return 200 for valid input.
-        
+
         Validates: Requirement 2.1 - POST /predict accepts patient data
         """
         response = client.post("/predict", json=VALID_PATIENT_DATA)
@@ -123,7 +123,7 @@ class TestPredictEndpoint:
 
     def test_predict_returns_prediction_field(self):
         """Predict endpoint SHALL return prediction field.
-        
+
         Validates: Requirement 2.2 - return prediction
         """
         response = client.post("/predict", json=VALID_PATIENT_DATA)
@@ -133,7 +133,7 @@ class TestPredictEndpoint:
 
     def test_predict_returns_probability_field(self):
         """Predict endpoint SHALL return probability field.
-        
+
         Validates: Requirement 2.2 - return probability
         """
         response = client.post("/predict", json=VALID_PATIENT_DATA)
@@ -143,7 +143,7 @@ class TestPredictEndpoint:
 
     def test_predict_returns_risk_level_field(self):
         """Predict endpoint SHALL return risk_level field.
-        
+
         Validates: Requirement 2.2 - return risk level
         """
         response = client.post("/predict", json=VALID_PATIENT_DATA)
@@ -153,7 +153,7 @@ class TestPredictEndpoint:
 
     def test_predict_returns_feature_importance(self):
         """Predict endpoint SHALL return feature_importance field.
-        
+
         Validates: Requirement 2.2 - return feature importance
         """
         response = client.post("/predict", json=VALID_PATIENT_DATA)
@@ -165,72 +165,72 @@ class TestPredictEndpoint:
 
 class TestPredictEndpointValidation:
     """Tests for /predict endpoint validation errors.
-    
+
     Validates: Requirement 2.5 - return appropriate HTTP error codes
     """
 
     def test_predict_missing_field_returns_422(self):
         """Predict endpoint SHALL return 422 for missing required field.
-        
+
         Validates: Requirement 2.5 - return appropriate HTTP error codes
         """
         invalid_data = VALID_PATIENT_DATA.copy()
         del invalid_data["age"]
-        
+
         response = client.post("/predict", json=invalid_data)
         assert response.status_code == 422
 
     def test_predict_missing_field_error_identifies_field(self):
         """Validation error SHALL identify the missing field.
-        
+
         Validates: Requirement 2.5 - descriptive error messages
         """
         invalid_data = VALID_PATIENT_DATA.copy()
         del invalid_data["age"]
-        
+
         response = client.post("/predict", json=invalid_data)
         data = response.json()
-        
+
         assert "detail" in data
         error_fields = [e["loc"][-1] for e in data["detail"]]
         assert "age" in error_fields
 
     def test_predict_invalid_age_range_returns_422(self):
         """Predict endpoint SHALL return 422 for age out of range.
-        
+
         Validates: Requirement 2.5 - return appropriate HTTP error codes
         """
         invalid_data = VALID_PATIENT_DATA.copy()
         invalid_data["age"] = 150  # Above valid range
-        
+
         response = client.post("/predict", json=invalid_data)
         assert response.status_code == 422
 
     def test_predict_invalid_categorical_returns_422(self):
         """Predict endpoint SHALL return 422 for invalid categorical value.
-        
+
         Validates: Requirement 2.5 - return appropriate HTTP error codes
         """
         invalid_data = VALID_PATIENT_DATA.copy()
         invalid_data["cp"] = 99  # Invalid chest pain type
-        
+
         response = client.post("/predict", json=invalid_data)
         assert response.status_code == 422
 
     def test_predict_invalid_thal_returns_422(self):
         """Predict endpoint SHALL return 422 for invalid thal value.
-        
+
         Validates: Requirement 2.5 - return appropriate HTTP error codes
         """
         invalid_data = VALID_PATIENT_DATA.copy()
         invalid_data["thal"] = 5  # Invalid thalassemia value
-        
+
         response = client.post("/predict", json=invalid_data)
         assert response.status_code == 422
 
     def test_predict_empty_body_returns_422(self):
         """Predict endpoint SHALL return 422 for empty request body.
-        
+
         Validates: Requirement 2.5 - return appropriate HTTP error codes
         """
         response = client.post("/predict", json={})
@@ -239,7 +239,7 @@ class TestPredictEndpointValidation:
 
 class TestAPIDocumentation:
     """Tests for automatic API documentation.
-    
+
     Validates: Requirement 2.6 - automatic API documentation via Swagger/OpenAPI
     """
 
