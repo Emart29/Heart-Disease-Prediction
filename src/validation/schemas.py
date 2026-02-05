@@ -20,7 +20,10 @@ class PatientData(BaseModel):
     sex: Literal[0, 1] = Field(..., description="Biological sex (0=Female, 1=Male)")
     cp: Literal[1, 2, 3, 4] = Field(
         ...,
-        description="Chest pain type (1=Typical angina, 2=Atypical angina, 3=Non-anginal pain, 4=Asymptomatic)",
+        description=(
+            "Chest pain type (1=Typical angina, 2=Atypical angina, "
+            "3=Non-anginal pain, 4=Asymptomatic)"
+        ),
     )
     trestbps: int = Field(
         ..., ge=80, le=200, description="Resting blood pressure in mm Hg (80-200)"
@@ -33,7 +36,10 @@ class PatientData(BaseModel):
     )
     restecg: Literal[0, 1, 2] = Field(
         ...,
-        description="Resting ECG results (0=Normal, 1=ST-T wave abnormality, 2=Left ventricular hypertrophy)",
+        description=(
+            "Resting ECG results (0=Normal, 1=ST-T wave abnormality, "
+            "2=Left ventricular hypertrophy)"
+        ),
     )
     thalach: int = Field(
         ..., ge=60, le=220, description="Maximum heart rate achieved (60-220)"
@@ -45,11 +51,13 @@ class PatientData(BaseModel):
         ...,
         ge=0.0,
         le=7.0,
-        description="ST depression induced by exercise relative to rest (0.0-7.0)",
+        description=("ST depression induced by exercise relative to rest (0.0-7.0)"),
     )
     slope: Literal[1, 2, 3] = Field(
         ...,
-        description="Slope of peak exercise ST segment (1=Upsloping, 2=Flat, 3=Downsloping)",
+        description=(
+            "Slope of peak exercise ST segment (1=Upsloping, 2=Flat, " "3=Downsloping)"
+        ),
     )
     ca: Literal[0, 1, 2, 3] = Field(
         ..., description="Number of major vessels colored by fluoroscopy (0-3)"

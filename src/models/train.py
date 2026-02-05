@@ -441,7 +441,7 @@ if __name__ == "__main__":
         register_model=not args.no_register,
     )
 
-    print(f"\nTraining completed!")
+    print("\nTraining completed!")
     print(f"Run ID: {result['run_id']}")
     print(f"Metrics: {result['metrics']}")
     print(f"Model saved to: {result['model_path']}")

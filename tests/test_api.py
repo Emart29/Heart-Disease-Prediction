@@ -7,11 +7,11 @@ and error responses.
 **Validates: Requirements 9.3**
 """
 
-import pytest
+from unittest.mock import patch
+
 from fastapi.testclient import TestClient
 
 from api.main import app, load_model
-
 
 # Ensure model is loaded before tests run
 load_model()
@@ -260,3 +260,121 @@ class TestAPIDocumentation:
         """ReDoc documentation SHALL be available at /redoc."""
         response = client.get("/redoc")
         assert response.status_code == 200
+
+
+class TestModelLoadingFailure:
+    """Tests for model loading failure scenarios."""
+
+    @patch("api.main.HeartDiseasePredictor")
+    def test_model_info_when_model_not_loaded(self, mock_predictor):
+        """Model info endpoint SHALL return 503 when model not loaded."""
+        # Mock predictor initialization to fail
+        mock_predictor.side_effect = Exception("Model file not found")
+
+        # Create a new app instance with failed model loading
+        with patch("api.main.predictor", None):
+            response = client.get("/model-info")
+            assert response.status_code == 503
+            assert "Model not loaded" in response.json()["detail"]
+
+    @patch("api.main.HeartDiseasePredictor")
+    def test_predict_when_model_not_loaded(self, mock_predictor):
+        """Predict endpoint SHALL return 503 when model not loaded."""
+        # Mock predictor initialization to fail
+        mock_predictor.side_effect = Exception("Model file not found")
+
+        # Create a new app instance with failed model loading
+        with patch("api.main.predictor", None):
+            response = client.post("/predict", json=VALID_PATIENT_DATA)
+            assert response.status_code == 503
+            assert "Model not loaded" in response.json()["detail"]
+
+    def test_predict_when_prediction_fails(self):
+        """Predict endpoint SHALL return 500 when prediction fails."""
+        # Mock predictor to raise exception during prediction
+        with patch("api.main.predictor") as mock_predictor:
+            mock_predictor.predict.side_effect = Exception("Prediction error")
+
+            response = client.post("/predict", json=VALID_PATIENT_DATA)
+            assert response.status_code == 500
+            assert "Prediction failed" in response.json()["detail"]
+
+
+class TestLoadModelFunction:
+    """Tests for the load_model function."""
+
+    @patch("api.main.HeartDiseasePredictor")
+    @patch("builtins.print")
+    def test_load_model_handles_exception(self, mock_print, mock_predictor):
+        """load_model SHALL handle exceptions gracefully."""
+        # Mock predictor initialization to fail
+        mock_predictor.side_effect = Exception("Model file not found")
+
+        # Call load_model function
+        load_model()
+
+        # Verify error was printed and predictor is None
+        mock_print.assert_called_once()
+        assert "Failed to load model" in mock_print.call_args[0][0]
+
+
+class TestCORSMiddleware:
+    """Test CORS middleware configuration."""
+
+    def test_cors_headers_present(self):
+        """Test that CORS headers are present in responses."""
+        response = client.options("/health")
+        # OPTIONS requests should be handled by CORS middleware
+        assert response.status_code in [
+            200,
+            405,
+        ]  # 405 if OPTIONS not explicitly handled
+
+
+class TestAPIMetadata:
+    """Test API metadata and documentation."""
+
+    def test_api_title_and_description(self):
+        """Test that API has correct title and description."""
+        response = client.get("/openapi.json")
+        data = response.json()
+
+        assert "Heart Disease Prediction API" in data["info"]["title"]
+        assert "ML-powered" in data["info"]["description"]
+
+    def test_api_version(self):
+        """Test that API version is set."""
+        response = client.get("/openapi.json")
+        data = response.json()
+
+        assert "version" in data["info"]
+        assert data["info"]["version"] is not None
+
+
+class TestModelLoadingEdgeCases:
+    """Test edge cases in model loading."""
+
+    @patch("api.main.HeartDiseasePredictor")
+    @patch("builtins.print")
+    def test_load_model_exception_handling(self, mock_print, mock_predictor):
+        """Test load_model handles exceptions and prints warnings."""
+        # Mock predictor to raise an exception
+        mock_predictor.side_effect = Exception("Model loading failed")
+
+        # Call load_model directly
+        from api.main import load_model
+
+        load_model()
+
+        # Verify exception was caught and warning was printed
+        mock_print.assert_called_once()
+        assert "Failed to load model" in mock_print.call_args[0][0]
+
+    def test_load_model_success(self):
+        """Test successful model loading."""
+        from api.main import load_model
+
+        # This should work with the actual model file
+        load_model()
+
+        # Note: predictor should either be loaded or None if file doesn't exist

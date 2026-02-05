@@ -10,7 +10,6 @@ from pydantic import ValidationError
 
 from src.validation.schemas import PatientData
 
-
 # Valid value strategies for each field
 VALID_AGE = st.integers(min_value=20, max_value=100)
 VALID_SEX = st.sampled_from([0, 1])
@@ -77,7 +76,8 @@ class TestProperty2InvalidInputProducesValidationError:
     SHALL reject the input and return an error message identifying the
     specific invalid field(s).
 
-    **Feature: portfolio-enhancement, Property 2: Invalid Input Produces Validation Error**
+    **Feature: portfolio-enhancement, Property 2: Invalid Input Produces**
+    **Validation Error**
     **Validates: Requirements 4.1, 4.2, 4.3, 4.4**
     """
 
