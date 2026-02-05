@@ -56,6 +56,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Set working directory
 WORKDIR /app
+RUN mkdir -p /app/mlflow_artifacts && chown -R appuser:appgroup /app/mlflow_artifacts
 
 # Copy application code
 COPY --chown=appuser:appgroup src/ ./src/
@@ -63,7 +64,7 @@ COPY --chown=appuser:appgroup api/ ./api/
 COPY --chown=appuser:appgroup app/ ./app/
 COPY --chown=appuser:appgroup models/ ./models/
 COPY --chown=appuser:appgroup data/ ./data/
-COPY --chown=appuser:appgroup mlflow_artifacts/ ./mlflow_artifacts/
+
 
 # Create necessary directories
 RUN mkdir -p /app/reports /app/docs && \
