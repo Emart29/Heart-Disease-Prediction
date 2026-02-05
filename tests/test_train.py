@@ -294,9 +294,10 @@ class TestRunTrainingExperiment:
 
     def test_run_training_experiment_with_custom_run_name(self, tmp_path):
         """Test training experiment with custom run name."""
-        with patch("src.models.train.mlflow") as mock_mlflow, patch(
-            "src.models.train.load_and_prepare_data"
-        ) as mock_load_data:
+        with (
+            patch("src.models.train.mlflow") as mock_mlflow,
+            patch("src.models.train.load_and_prepare_data") as mock_load_data,
+        ):
 
             # Setup mocks
             mock_mlflow.set_experiment = Mock()

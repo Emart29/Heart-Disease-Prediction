@@ -305,7 +305,8 @@ def main():
 
         st.divider()
         st.header("ℹ️ About")
-        st.markdown("""
+        st.markdown(
+            """
             This application predicts heart disease risk based on 13 clinical features.
 
             **Model**: Random Forest Classifier
@@ -314,7 +315,8 @@ def main():
 
             ⚠️ **Disclaimer**: This tool is for educational purposes only
             and should not replace professional medical advice.
-            """)
+            """
+        )
 
     # Form for patient inputs...
     # (rest of the form code remains the same; lines wrapped if >88 chars)
