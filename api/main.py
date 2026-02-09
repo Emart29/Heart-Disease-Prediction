@@ -8,6 +8,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import Counter, Histogram, Gauge
 
 from src.config import settings
 from src.models.predict import HeartDiseasePredictor
@@ -20,6 +22,30 @@ from src.validation.schemas import (
 
 # Global predictor instance
 predictor: HeartDiseasePredictor = None
+
+# Custom business metrics
+prediction_counter = Counter(
+    "ml_predictions_total",
+    "Total number of ML predictions made",
+    ["prediction_result", "risk_level"],
+)
+
+prediction_confidence = Histogram(
+    "ml_prediction_confidence",
+    "Confidence score of ML predictions",
+    buckets=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+)
+
+model_accuracy_gauge = Gauge(
+    "ml_model_accuracy", "Current model accuracy from training"
+)
+
+feature_importance_gauge = Gauge(
+    "ml_feature_importance", "Feature importance scores", ["feature_name"]
+)
+
+# Set initial model accuracy (from training)
+model_accuracy_gauge.set(0.885)
 
 
 def load_model():
@@ -62,6 +88,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add Prometheus instrumentation
+Instrumentator().instrument(app).expose(app)
 
 
 @app.get(
@@ -144,6 +173,30 @@ async def predict(patient: PatientData) -> PredictionResponse:
 
     try:
         result = predictor.predict(patient.model_dump())
+
+        # Track business metrics
+        prediction_result = "positive" if result["prediction"] == 1 else "negative"
+        risk_level = result["risk_level"].lower()
+
+        # Update counters
+        prediction_counter.labels(
+            prediction_result=prediction_result, risk_level=risk_level
+        ).inc()
+
+        # Track confidence/probability
+        prediction_confidence.observe(result["probability"])
+
+        # Update feature importance metrics (top 5 features)
+        feature_importance = result.get("feature_importance", {})
+        top_features = sorted(
+            feature_importance.items(), key=lambda x: abs(x[1]), reverse=True
+        )[:5]
+
+        for feature_name, importance in top_features:
+            feature_importance_gauge.labels(feature_name=feature_name).set(
+                abs(importance)
+            )
+
         return PredictionResponse(**result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
